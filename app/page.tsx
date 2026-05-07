@@ -51,6 +51,7 @@ export default function Page() {
 
         const scroll = { progress: 0, target: 0 };
         const mouse = { x: 0, y: 0 };
+        const keys = { up: false, down: false };
         const parallax = new THREE.Vector3();
         const currentOffset = new THREE.Vector3();
         const clock = new THREE.Clock();
@@ -139,6 +140,28 @@ export default function Page() {
             scroll.target = THREE.MathUtils.clamp(scroll.target + e.deltaY * 0.0015, 0, 1);
         };
 
+
+        const onKeyDown = (e: KeyboardEvent) => {
+            if (e.key === "ArrowDown") keys.down = true;
+            if (e.key === "ArrowUp") keys.up = true;
+        };
+        const onKeyUp = (e: KeyboardEvent) => {
+            if (e.key === "ArrowDown") keys.down = false;
+            if (e.key === "ArrowUp") keys.up = false;
+        };
+
+        let touchStartY = 0;
+
+        const onTouchStart = (e: TouchEvent) => {
+            touchStartY = e.touches[0].clientY;
+        };
+
+        const onTouchMove = (e: TouchEvent) => {
+            const deltaY = touchStartY - e.touches[0].clientY;
+            scroll.target = THREE.MathUtils.clamp(scroll.target + deltaY * 0.001, 0, 1);
+            touchStartY = e.touches[0].clientY;
+        };
+
         const onMouseMove = (e: MouseEvent) => {
             mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
             mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
@@ -154,13 +177,19 @@ export default function Page() {
         window.addEventListener("mousemove", onMouseMove);
         window.addEventListener("click", onClick);
         window.addEventListener("resize", onResize);
-        document.body.style.overflow = "hidden";
+        window.addEventListener("keydown", onKeyDown);
+        window.addEventListener("keyup", onKeyUp);
+        window.addEventListener("touchstart", onTouchStart, { passive: true });
+        window.addEventListener("touchmove", onTouchMove, { passive: true });
 
         const animate = () => {
             requestAnimationFrame(animate);
             const delta = clock.getDelta();
             mainMixer?.update(delta);
             textMixer?.update(delta);
+
+            if (keys.down) scroll.target = THREE.MathUtils.clamp(scroll.target + 0.02, 0, 1);
+            if (keys.up) scroll.target = THREE.MathUtils.clamp(scroll.target - 0.02, 0, 1);
 
             scroll.progress += (scroll.target - scroll.progress) * 0.08;
             const t = scroll.progress;
@@ -199,7 +228,11 @@ export default function Page() {
             window.removeEventListener("wheel", onWheel);
             window.removeEventListener("mousemove", onMouseMove);
             window.removeEventListener("click", onClick);
-            document.body.style.overflow = "";
+            window.removeEventListener("keydown", onKeyDown);
+            window.removeEventListener("keyup", onKeyUp);
+            window.removeEventListener("touchstart", onTouchStart);
+            window.removeEventListener("touchmove", onTouchMove);
+
             document.body.style.cursor = "default";
             mountRef.current?.removeChild(renderer.domElement);
         };
