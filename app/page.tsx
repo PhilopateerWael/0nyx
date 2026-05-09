@@ -4,6 +4,9 @@ import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
+import AboutMe from "./components/AboutMe";
+import Projects from "./components/Projects";
+import Achievements from "./components/Achievements";
 
 
 enum modal {
@@ -260,12 +263,31 @@ export default function Page() {
             mountRef.current?.removeChild(renderer.domElement);
         };
     }, []);
+    
+    function renderModal(){
+        switch(selectedModal){
+            case modal.aboutMe:
+                return <AboutMe />;
+            case modal.projects:
+                return <Projects />;
+            case modal.achievements:
+                return <Achievements />;
+            default:
+                return null;
+        }
+    }
 
     return (
         <div style={{ position: "relative", width: "100svw", height: "100svh", overflow: "hidden" }}>
             <div ref={mountRef} style={{ width: "100%", height: "100%" }} />
-            <div className={"absolute bottom-32 left-0 w-full transition-opacity duration-300 pointer-events-none text-lg flex justify-center items-center bg-black/50 py-2 opacity-0 " + (hoverMessage && selectedModal == undefined ? "opacity-100 " : " ") + (hoverMessage == hoverMessageMap.Mesh_0010 ? "text-red-500" : "text-white ")}>
+            <div className={"z-10 absolute top-0 left-0 w-full h-full transition-all duration-300 " + (selectedModal !== undefined ? "pointer-events-auto bg-black/70 opacity-100" : "pointer-events-none opacity-0")}>
+                {renderModal()}
+            </div>
+            <div className={"z-5 absolute bottom-32 left-0 w-full transition-opacity duration-300 pointer-events-none text-lg flex justify-center items-center bg-black/50 py-2 opacity-0 " + (hoverMessage && selectedModal == undefined ? "opacity-100 " : " ") + (hoverMessage == hoverMessageMap.Mesh_0010 ? "text-red-500" : "text-white ")}>
                 <span className="text-3xl h-8">{hoverMessage}</span>
+            </div>
+            <div>
+                
             </div>
         </div>
     );
