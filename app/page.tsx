@@ -5,6 +5,13 @@ import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
 
+
+enum modal {
+    aboutMe,
+    projects,
+    achievements,
+}
+
 const ANIM = {
     death: "Death.002",
     idle: "Idle01",
@@ -13,13 +20,25 @@ const ANIM = {
 
 const CLICKABLE = ["sett", "Mesh_0010", "laptop", "cup"];
 
+const hoverMessageMap = {
+    sett: "About Me",
+    laptop: "Projects",
+    cup: "Achievements",
+    Mesh_0010: "PLEASE DON'T THE CAT",
+}
+
+const clickableToModalMap = {
+    sett: modal.aboutMe,
+    laptop: modal.projects,
+    cup: modal.achievements,
+}
+
 export default function Page() {
     const mountRef = useRef<HTMLDivElement | null>(null);
 
     // for future components
-    const [aboutMe, setAboutMe] = useState(false);
-    const [projects, setProjects] = useState(false);
-    const [achievements, setAchievements] = useState(false);
+    const [selectedModal, setSelectedModal] = useState<modal | undefined>(undefined);
+    const [hoverMessage, setHoverMessage] = useState("");
 
     useEffect(() => {
         if (!mountRef.current) return;
@@ -114,13 +133,11 @@ export default function Page() {
         };
 
         const onClick = () => {
-            if (!currentIntersect) return;
+            if (!currentIntersect || scroll.target != 1) return;
             const { name } = currentIntersect;
             if (!clickableNames.includes(name)) return;
 
-            setAboutMe(name === "sett");
-            setProjects(name === "laptop");
-            setAchievements(name === "cup");
+            setSelectedModal(clickableToModalMap[name as keyof typeof clickableToModalMap]);
 
             if (name === "Mesh_0010" && !hasDied) {
                 hasDied = true;
@@ -157,6 +174,7 @@ export default function Page() {
         };
 
         const onTouchMove = (e: TouchEvent) => {
+            e.preventDefault();
             const deltaY = touchStartY - e.touches[0].clientY;
             scroll.target = THREE.MathUtils.clamp(scroll.target + deltaY * 0.001, 0, 1);
             touchStartY = e.touches[0].clientY;
@@ -207,12 +225,17 @@ export default function Page() {
                 camera.position.copy(basePos).add(currentOffset);
             }
 
-            if (model) {
+            if (model && scroll.target === 1) {
                 raycaster.setFromCamera(new THREE.Vector2(mouse.x, mouse.y), camera);
                 const intersects = raycaster.intersectObject(model, true);
                 const hit = intersects[0]?.object ?? null;
                 if (hit !== currentIntersect) currentIntersect = hit;
                 document.body.style.cursor = hit && clickableNames.includes(hit.name) ? "pointer" : "default";
+                setHoverMessage(hoverMessageMap[hit.name as keyof typeof hoverMessageMap] || "");
+            } else {
+                currentIntersect = null;
+                document.body.style.cursor = "default";
+                setHoverMessage("");
             }
 
             renderer.render(scene, camera);
@@ -239,8 +262,11 @@ export default function Page() {
     }, []);
 
     return (
-        <div style={{ position: "relative", width: "100vw", height: "100vh", overflow: "hidden" }}>
+        <div style={{ position: "relative", width: "100svw", height: "100svh", overflow: "hidden" }}>
             <div ref={mountRef} style={{ width: "100%", height: "100%" }} />
+            <div className={"absolute bottom-32 left-0 w-full transition-opacity duration-300 pointer-events-none text-lg flex justify-center items-center bg-black/50 py-2 opacity-0 " + (hoverMessage && selectedModal == undefined ? "opacity-100 " : " ") + (hoverMessage == hoverMessageMap.Mesh_0010 ? "text-red-500" : "text-white ")}>
+                <span className="text-3xl h-8">{hoverMessage}</span>
+            </div>
         </div>
     );
 }
