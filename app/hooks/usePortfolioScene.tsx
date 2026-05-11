@@ -36,6 +36,11 @@ type Props = {
     setLoadError: (value: boolean) => void;
 };
 
+function isDesktopFunc() {
+    if (typeof window === "undefined") return false;
+    return window.matchMedia("(pointer: fine) and (hover: hover)").matches;
+}
+
 export function usePortfolioScene({
     mountRef,
     setSelectedModal,
@@ -53,6 +58,7 @@ export function usePortfolioScene({
     });
 
     const loadingThrottle = useRef(0);
+    const isDesktop = isDesktopFunc();
 
     useEffect(() => {
         if (!mountRef.current) return;
@@ -164,24 +170,35 @@ export function usePortfolioScene({
         };
 
         const onClick = () => {
-            const { currentIntersect, clickableNames, hasDied } = frameState.current;
-            if (!currentIntersect || scroll.target < 0.999) return;
-            const { name } = currentIntersect;
-            if (!clickableNames.includes(name)) return;
+            if (model && scroll.target >= 0.999) {
+                rayMouse.set(mouse.x, mouse.y);
+                raycaster.setFromCamera(rayMouse, camera);
+                const intersects = raycaster.intersectObject(model, true);
+                const hit = intersects[0]?.object ?? null;
 
-            setSelectedModal(clickableToModalMap[name as keyof typeof clickableToModalMap]);
+                frameState.current.currentIntersect = hit;
 
-            if (name === "Mesh_0010" && !hasDied) {
-                frameState.current.hasDied = true;
-                idleAction?.fadeOut(0.3);
-                deathAction?.reset().setEffectiveTimeScale(1).setEffectiveWeight(1);
-                if (deathAction) {
-                    deathAction.enabled = true;
-                    deathAction.setLoop(THREE.LoopOnce, 1);
-                    deathAction.reset().fadeIn(0.2).play();
+                const { currentIntersect, clickableNames, hasDied } = frameState.current;
+                
+                if (!currentIntersect) return;
+
+                const { name } = currentIntersect;
+                if (!clickableNames.includes(name)) return;
+
+                setSelectedModal(clickableToModalMap[name as keyof typeof clickableToModalMap]);
+
+                if (name === "Mesh_0010" && !hasDied) {
+                    frameState.current.hasDied = true;
+                    idleAction?.fadeOut(0.3);
+                    deathAction?.reset().setEffectiveTimeScale(1).setEffectiveWeight(1);
+                    if (deathAction) {
+                        deathAction.enabled = true;
+                        deathAction.setLoop(THREE.LoopOnce, 1);
+                        deathAction.reset().fadeIn(0.2).play();
+                    }
+                    frameState.current.clickableNames = frameState.current.clickableNames.filter(n => n !== "Mesh_0010");
+                    if (currentIntersect) currentIntersect.visible = false;
                 }
-                frameState.current.clickableNames = frameState.current.clickableNames.filter(n => n !== "Mesh_0010");
-                if (currentIntersect) currentIntersect.visible = false;
             }
         };
 
@@ -273,39 +290,39 @@ export function usePortfolioScene({
                 camera.position.copy(basePos).add(currentOffset);
             }
 
-            if (model && scroll.target >= 0.999) {
-                rayMouse.set(mouse.x, mouse.y);
-                raycaster.setFromCamera(rayMouse, camera);
-                const intersects = raycaster.intersectObject(model, true);
-                const hit = intersects[0]?.object ?? null;
+            if (isDesktop) {
+                if (model && scroll.target >= 0.999) {
+                    rayMouse.set(mouse.x, mouse.y);
+                    raycaster.setFromCamera(rayMouse, camera);
+                    const intersects = raycaster.intersectObject(model, true);
+                    const hit = intersects[0]?.object ?? null;
 
-                if (hit !== frameState.current.currentIntersect) {
                     frameState.current.currentIntersect = hit;
-                }
 
-                const hitName = hit?.name || "";
-                const isClickable = frameState.current.clickableNames.includes(hitName);
-                const cursor = isClickable ? "pointer" : "default";
-                const message = isClickable ? hoverMessageMap[hitName as keyof typeof hoverMessageMap] || "" : "";
+                    const hitName = hit?.name || "";
+                    const isClickable = frameState.current.clickableNames.includes(hitName);
+                    const cursor = isClickable ? "pointer" : "default";
+                    const message = isClickable ? hoverMessageMap[hitName as keyof typeof hoverMessageMap] || "" : "";
 
-                if (message !== prevHoverMessage) {
-                    prevHoverMessage = message;
-                    setHoverMessage(message);
+                    if (message !== prevHoverMessage) {
+                        prevHoverMessage = message;
+                        setHoverMessage(message);
+                    }
+                    if (cursor !== prevCursorStyle) {
+                        prevCursorStyle = cursor;
+                        document.body.style.cursor = cursor;
+                    }
+                } else {
+                    if (prevHoverMessage !== "") {
+                        prevHoverMessage = "";
+                        setHoverMessage("");
+                    }
+                    if (prevCursorStyle !== "default") {
+                        prevCursorStyle = "default";
+                        document.body.style.cursor = "default";
+                    }
+                    frameState.current.currentIntersect = null;
                 }
-                if (cursor !== prevCursorStyle) {
-                    prevCursorStyle = cursor;
-                    document.body.style.cursor = cursor;
-                }
-            } else {
-                if (prevHoverMessage !== "") {
-                    prevHoverMessage = "";
-                    setHoverMessage("");
-                }
-                if (prevCursorStyle !== "default") {
-                    prevCursorStyle = "default";
-                    document.body.style.cursor = "default";
-                }
-                frameState.current.currentIntersect = null;
             }
 
             renderer.render(scene, camera);
