@@ -36,11 +36,6 @@ type Props = {
     setLoadError: (value: boolean) => void;
 };
 
-function isDesktopFunc() {
-    if (typeof window === "undefined") return false;
-    return window.matchMedia("(pointer: fine) and (hover: hover)").matches;
-}
-
 export function usePortfolioScene({
     mountRef,
     setSelectedModal,
@@ -58,7 +53,6 @@ export function usePortfolioScene({
     });
 
     const loadingThrottle = useRef(0);
-    const isDesktop = isDesktopFunc();
 
     useEffect(() => {
         if (!mountRef.current) return;
@@ -179,7 +173,7 @@ export function usePortfolioScene({
                 frameState.current.currentIntersect = hit;
 
                 const { currentIntersect, clickableNames, hasDied } = frameState.current;
-                
+
                 if (!currentIntersect) return;
 
                 const { name } = currentIntersect;
@@ -264,6 +258,9 @@ export function usePortfolioScene({
 
         let rafId: number;
 
+        let lastRaycastTime = 0;
+        const RAYCAST_INTERVAL_MS = 50;
+
         const animate = () => {
             rafId = requestAnimationFrame(animate);
             timer.update();
@@ -290,20 +287,23 @@ export function usePortfolioScene({
                 camera.position.copy(basePos).add(currentOffset);
             }
 
-            if (isDesktop) {
+            const now = performance.now();
+
+            if (now - lastRaycastTime >= RAYCAST_INTERVAL_MS) {
+                lastRaycastTime = now;
                 if (model && scroll.target >= 0.999) {
                     rayMouse.set(mouse.x, mouse.y);
                     raycaster.setFromCamera(rayMouse, camera);
                     const intersects = raycaster.intersectObject(model, true);
                     const hit = intersects[0]?.object ?? null;
-
+    
                     frameState.current.currentIntersect = hit;
-
+    
                     const hitName = hit?.name || "";
                     const isClickable = frameState.current.clickableNames.includes(hitName);
                     const cursor = isClickable ? "pointer" : "default";
                     const message = isClickable ? hoverMessageMap[hitName as keyof typeof hoverMessageMap] || "" : "";
-
+    
                     if (message !== prevHoverMessage) {
                         prevHoverMessage = message;
                         setHoverMessage(message);
