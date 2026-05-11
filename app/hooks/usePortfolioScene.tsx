@@ -36,6 +36,16 @@ type Props = {
     setLoadError: (value: boolean) => void;
 };
 
+function isDesktop(): boolean {
+    if (typeof window === "undefined") return false;
+
+    const isMobileUA = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+    const hasFinePointer = window.matchMedia("(pointer: fine)").matches;
+    const hasHover = window.matchMedia("(hover: hover)").matches;
+
+    return !isMobileUA && hasFinePointer && hasHover;
+}
+
 export function usePortfolioScene({
     mountRef,
     setSelectedModal,
@@ -53,6 +63,9 @@ export function usePortfolioScene({
     });
 
     const loadingThrottle = useRef(0);
+    const isDesktopDevice = isDesktop();
+
+    console.log("Is desktop:", isDesktop());
 
     useEffect(() => {
         if (!mountRef.current) return;
@@ -289,21 +302,21 @@ export function usePortfolioScene({
 
             const now = performance.now();
 
-            if (now - lastRaycastTime >= RAYCAST_INTERVAL_MS) {
+            if (now - lastRaycastTime >= RAYCAST_INTERVAL_MS && isDesktopDevice) {
                 lastRaycastTime = now;
                 if (model && scroll.target >= 0.999) {
                     rayMouse.set(mouse.x, mouse.y);
                     raycaster.setFromCamera(rayMouse, camera);
                     const intersects = raycaster.intersectObject(model, true);
                     const hit = intersects[0]?.object ?? null;
-    
+
                     frameState.current.currentIntersect = hit;
-    
+
                     const hitName = hit?.name || "";
                     const isClickable = frameState.current.clickableNames.includes(hitName);
                     const cursor = isClickable ? "pointer" : "default";
                     const message = isClickable ? hoverMessageMap[hitName as keyof typeof hoverMessageMap] || "" : "";
-    
+
                     if (message !== prevHoverMessage) {
                         prevHoverMessage = message;
                         setHoverMessage(message);
