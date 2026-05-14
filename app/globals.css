@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
-/* to prevent refresh if mobile users try to scroll backwards */
-html, body {
-  overscroll-behavior-y: none;
+html,
+body {
+  overscroll-behavior: none;
 }
 
 @font-face {
@@ -45,8 +45,24 @@ html, body {
   }
 }
 
-body {
+body , html {
   background: var(--background);
   color: var(--foreground);
   font-family: "Minecraft", sans-serif;
+  overflow: hidden;
+}
+
+::-webkit-scrollbar {
+  width: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgb(49, 49, 49);
+}
+
+::-webkit-scrollbar-thumb {
+  background: white;
+  border: 2px solid transparent;
+  background-clip: content-box;
+  border-radius: 0;
 }

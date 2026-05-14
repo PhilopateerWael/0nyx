@@ -34,6 +34,7 @@ type Props = {
     setLoadingProgress: (value: number) => void;
     setIsLoading: (value: boolean) => void;
     setLoadError: (value: boolean) => void;
+    isModalOpen: boolean;
 };
 
 function isDesktop(): boolean {
@@ -52,7 +53,8 @@ export function usePortfolioScene({
     setHoverMessage,
     setLoadingProgress,
     setIsLoading,
-    setLoadError
+    setLoadError,
+    isModalOpen
 }: Props) {
     const frameState = useRef({
         currentIntersect: null as THREE.Object3D | null,
@@ -64,8 +66,11 @@ export function usePortfolioScene({
 
     const loadingThrottle = useRef(0);
     const isDesktopDevice = isDesktop();
+    const isModalOpenRef = useRef(isModalOpen);
 
-    console.log("Is desktop:", isDesktop());
+    useEffect(() => {
+        isModalOpenRef.current = isModalOpen;
+    }, [isModalOpen]);
 
     useEffect(() => {
         if (!mountRef.current) return;
@@ -177,6 +182,7 @@ export function usePortfolioScene({
         };
 
         const onClick = () => {
+            if (isModalOpenRef.current) return;
             if (model && scroll.target >= 0.999) {
                 rayMouse.set(mouse.x, mouse.y);
                 raycaster.setFromCamera(rayMouse, camera);
@@ -193,6 +199,8 @@ export function usePortfolioScene({
                 if (!clickableNames.includes(name)) return;
 
                 setSelectedModal(clickableToModalMap[name as keyof typeof clickableToModalMap]);
+                document.body.style.cursor = "default";
+                prevCursorStyle = "default";
 
                 if (name === "Mesh_0010" && !hasDied) {
                     frameState.current.hasDied = true;
@@ -210,15 +218,18 @@ export function usePortfolioScene({
         };
 
         const onWheel = (e: WheelEvent) => {
+            if (isModalOpenRef.current) return;
             scroll.target = THREE.MathUtils.clamp(scroll.target + e.deltaY * 0.0015, 0, 1);
         };
 
         const onKeyDown = (e: KeyboardEvent) => {
+            if (isModalOpenRef.current) return;
             if (e.key === "ArrowDown") keys.down = true;
             if (e.key === "ArrowUp") keys.up = true;
         };
 
         const onKeyUp = (e: KeyboardEvent) => {
+            if (isModalOpenRef.current) return;
             if (e.key === "ArrowDown") keys.down = false;
             if (e.key === "ArrowUp") keys.up = false;
         };
@@ -230,7 +241,7 @@ export function usePortfolioScene({
         };
 
         const onTouchMove = (e: TouchEvent) => {
-            e.preventDefault();
+            if (isModalOpenRef.current) return;
             const deltaY = touchStartY - e.touches[0].clientY;
             scroll.target = THREE.MathUtils.clamp(scroll.target + deltaY * 0.001, 0, 1);
             touchStartY = e.touches[0].clientY;
@@ -302,7 +313,7 @@ export function usePortfolioScene({
 
             const now = performance.now();
 
-            if (now - lastRaycastTime >= RAYCAST_INTERVAL_MS && isDesktopDevice) {
+            if (now - lastRaycastTime >= RAYCAST_INTERVAL_MS && isDesktopDevice && !isModalOpenRef.current) {
                 lastRaycastTime = now;
                 if (model && scroll.target >= 0.999) {
                     rayMouse.set(mouse.x, mouse.y);
