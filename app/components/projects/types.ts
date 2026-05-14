@@ -99,7 +99,7 @@ export const PROJECTS: Project[] = [
             features: [
                 "User authentication with secure JWT system",
                 "Product browsing and cart management",
-                "Admin dashboard for product CRUD operations",
+                "Admin authenticated actions for product CRUD operations",
                 "Loyalty points system per purchase",
                 "Stripe payment integration",
                 "Image upload and product management system",
@@ -129,7 +129,7 @@ export const PROJECTS: Project[] = [
             ],
 
             notes:
-                "Built as a part of DEPI final project focusing heavily on backend logic, system reliability, and deployment.",
+                "Built as a part of DEPI final project focusing heavily on backend logic, system reliability, and deployment. (Due to an issue in mongodb's in the database's region the database became unaccessible so to make the project usable and viewable i put some mock products there but originally it had better data.)",
         },
     },
 
