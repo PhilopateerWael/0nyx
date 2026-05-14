@@ -1,5 +1,7 @@
+import { useState } from "react";
 import { McButton } from "./McButton";
 import SectionLabel from "./projects/SectionLabel";
+import Socials from "./Socials";
 
 interface AboutModalProps {
     onClose?: () => void;
@@ -8,6 +10,7 @@ interface AboutModalProps {
 const TECH_STACK = [
     "React",
     "Next.js",
+    "Vite",
     "Three.js",
     "TypeScript",
     "Tailwind CSS",
@@ -19,15 +22,29 @@ const TECH_STACK = [
     "PostgreSQL",
     "MongoDB",
 
-    "Python",
+    "JWT",
+    "OAuth2",
+    "BetterAuth",
 
-    "Cloudflare",
+    "Socket.io",
+    "WebSockets",
+    "Cloudflare Durable Objects",
+
+    "Stripe",
+
+    "Python",
     "Blender",
 ];
 
-const education = ["Bachelor of Computer and Data Science", "Faculty of Computers and Data Science (Alexandria University)", , "Expected Graduation: 2028", "Current CGPA: 3.7 / 4.0"];
+const education = [
+    "Bachelor of Computer and Data Science",
+    "Faculty of Computers and Data Science (Alexandria University)",
+    "Expected Graduation: 2028",
+    "Current CGPA: 3.7 / 4.0"
+];
 
 export default function AboutModal({ onClose }: AboutModalProps) {
+
     return (
         <div className="fixed inset-0 z-50 bg-black/70 flex justify-center items-center p-4">
             <div className="bg-[#c6c6c6] w-full max-w-3xl h-fit lg:max-h-[500px] max-h-full flex flex-col border-2 border-black shadow-[0_0_0_4px_#ffffff]">
@@ -52,7 +69,7 @@ export default function AboutModal({ onClose }: AboutModalProps) {
                 <div className="flex-1 overflow-y-auto bg-[#0d0d0d] text-white -mt-4">
                     <div className="px-5 pt-4 pb-6">
 
-                        <SectionLabel> Introduction</SectionLabel>
+                        <SectionLabel>Introduction</SectionLabel>
 
                         <div className="flex flex-col gap-4 text-[#bbb] leading-loose max-w-3xl">
                             <p>
@@ -95,7 +112,7 @@ export default function AboutModal({ onClose }: AboutModalProps) {
                             </p>
                         </div>
 
-                        <SectionLabel> Education</SectionLabel>
+                        <SectionLabel>Education</SectionLabel>
 
                         <div className="flex flex-col gap-2 text-[#ccc] leading-loose">
                             {education.map((line, i) => (
@@ -103,7 +120,7 @@ export default function AboutModal({ onClose }: AboutModalProps) {
                             ))}
                         </div>
 
-                        <SectionLabel> Tech Stack</SectionLabel>
+                        <SectionLabel>Tech Stack</SectionLabel>
 
                         <div className="flex flex-wrap gap-2">
                             {TECH_STACK.map((tech) => (
@@ -116,7 +133,7 @@ export default function AboutModal({ onClose }: AboutModalProps) {
                             ))}
                         </div>
 
-                        <SectionLabel> Current Focus</SectionLabel>
+                        <SectionLabel>Current Focus</SectionLabel>
 
                         <ul className="flex flex-col gap-2 list-none p-0">
                             <li className="flex items-start gap-2 text-[#d0d0d0] leading-loose">
@@ -134,7 +151,7 @@ export default function AboutModal({ onClose }: AboutModalProps) {
                                 Exploring interactive 3D web experiences
                             </li>
                         </ul>
-
+                        <Socials />
                     </div>
                 </div>
             </div>

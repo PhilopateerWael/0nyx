@@ -35,7 +35,7 @@ export const PROJECTS: Project[] = [
             "Interactive 3D developer portfolio built with Three.js, inspired by game environments and immersive UI design.",
 
         imageUrl:
-            "https://placehold.co/600x300/1a1a2e/80ff20?text=Test",
+            "https://res.cloudinary.com/dhaygzwic/image/upload/v1778792437/friends/kpgo52g3fiq6zxasrapn.png",
 
         content: {
             techStack: [
@@ -80,7 +80,7 @@ export const PROJECTS: Project[] = [
         description:
             "Full-stack e-commerce platform built as part of DEPI program with admin system, loyalty points, and secure checkout flow.",
         imageUrl:
-            "https://placehold.co/600x300/0d1a0d/80ff20?text=Test",
+            "https://res.cloudinary.com/dhaygzwic/image/upload/v1778792437/friends/pndfshnpc3mkkjpbjfoe.png",
 
         content: {
             techStack: [
@@ -143,7 +143,7 @@ export const PROJECTS: Project[] = [
         description:
             "Windows optimization platform with subscriptions, secure client communication, and system performance tools.",
         imageUrl:
-            "https://placehold.co/600x300/1a0d2e/cc77ff?text=Test",
+            "https://res.cloudinary.com/dhaygzwic/image/upload/v1778792437/friends/by0cun3arxp0bsoiuiz8.png",
 
         content: {
             techStack: [
@@ -196,7 +196,7 @@ export const PROJECTS: Project[] = [
         description:
             "Modern social platform with real-time messaging, follow/block system, and secure authentication.",
         imageUrl:
-            "https://placehold.co/600x300/1a0a1a/cc77ff?text=Test",
+            "https://res.cloudinary.com/dhaygzwic/image/upload/v1778792437/friends/e4eqe2gtfpf9iwcwgtgg.png",
 
         content: {
             techStack: [
