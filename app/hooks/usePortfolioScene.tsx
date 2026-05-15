@@ -134,7 +134,7 @@ export function usePortfolioScene({
             setLoadError(true);
         });
 
-        loader.load("/Experience.glb", (gltf) => {
+        loader.load("/Experience-compressed.glb", (gltf) => {
             model = gltf.scene;
             scene.add(gltf.scene);
 
@@ -169,7 +169,7 @@ export function usePortfolioScene({
 
             onResize()
         }, undefined, (error) => {
-            console.error("Error loading Experience.glb:", error);
+            console.error("Error loading Experience-compressed.glb:", error);
             setIsLoading(false);
             setLoadError(true);
         });;

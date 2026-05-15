@@ -82,7 +82,7 @@ export default function Page() {
                 </McButton>
             </div>
 
-            <div className="fixed bottom-0 w-full flex justify-center items-center text-[#000000c7] p-1">
+            <div className="fixed bottom-0 w-full flex justify-center items-center text-[#000000c7] p-1 text-center max-sm:text-xs">
                 scroll or use arrow keys to navigate through the portfolio.
             </div>
         </div>

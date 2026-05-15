@@ -24,7 +24,7 @@ export interface Project {
 export const PROJECTS: Project[] = [
     {
         id: 0,
-        name: "This Portfolio Website",
+        name: "This Portfolio",
 
         tags: [
             { label: "Frontend" },
