@@ -14,13 +14,6 @@ export const ANIM = {
 
 export const CLICKABLE = ["sett", "Mesh_0010", "laptop", "cup"];
 
-export const hoverMessageMap = {
-    sett: "About Me",
-    laptop: "Projects",
-    cup: "Achievements",
-    Mesh_0010: "PLEASE DON'T THE CAT",
-};
-
 export const clickableToModalMap = {
     sett: modal.aboutMe,
     laptop: modal.projects,
@@ -30,7 +23,6 @@ export const clickableToModalMap = {
 type Props = {
     mountRef: RefObject<HTMLDivElement | null>;
     setSelectedModal: (value: modal | undefined) => void;
-    setHoverMessage: (value: string) => void;
     setLoadingProgress: (value: number) => void;
     setIsLoading: (value: boolean) => void;
     setLoadError: (value: boolean) => void;
@@ -47,18 +39,17 @@ function isDesktop(): boolean {
     return !isMobileUA && hasFinePointer && hasHover;
 }
 
+const INTERACTION_THRESHOLD = 0.95;
+
 export function usePortfolioScene({
     mountRef,
     setSelectedModal,
-    setHoverMessage,
     setLoadingProgress,
     setIsLoading,
     setLoadError,
     isModalOpen
 }: Props) {
     const frameState = useRef({
-        currentIntersect: null as THREE.Object3D | null,
-        lastHoverMessage: "",
         lastCursorStyle: "",
         clickableNames: [...CLICKABLE],
         hasDied: false,
@@ -120,7 +111,7 @@ export function usePortfolioScene({
         const loader = new GLTFLoader(loadingManager);
         const dracoLoader = new DRACOLoader();
 
-        dracoLoader.setDecoderPath("https://www.gstatic.com/draco/v1/decoders/");
+        dracoLoader.setDecoderPath("/draco/");
         loader.setDRACOLoader(dracoLoader);
 
         loader.load("/TextComponents.glb", (gltf) => {
@@ -131,6 +122,14 @@ export function usePortfolioScene({
             }
         }, undefined, (error) => {
             console.error("Error loading TextComponents.glb:", error);
+            setIsLoading(false);
+            setLoadError(true);
+        });
+
+        loader.load("/Labels.glb", (gltf) => {
+            scene.add(gltf.scene);
+        }, undefined, (error) => {
+            console.error("Error loading Labels.glb:", error);
             setIsLoading(false);
             setLoadError(true);
         });
@@ -183,22 +182,22 @@ export function usePortfolioScene({
 
         const onClick = () => {
             if (isModalOpenRef.current) return;
-            if (model && scroll.target >= 0.999) {
+            const canInteract = scroll.target >= INTERACTION_THRESHOLD;
+            if (model && canInteract) {
                 rayMouse.set(mouse.x, mouse.y);
                 raycaster.setFromCamera(rayMouse, camera);
                 const intersects = raycaster.intersectObject(model, true);
                 const hit = intersects[0]?.object ?? null;
 
-                frameState.current.currentIntersect = hit;
+                const { clickableNames, hasDied } = frameState.current;
 
-                const { currentIntersect, clickableNames, hasDied } = frameState.current;
+                if (!hit) return;
 
-                if (!currentIntersect) return;
-
-                const { name } = currentIntersect;
+                const { name } = hit;
                 if (!clickableNames.includes(name)) return;
 
                 setSelectedModal(clickableToModalMap[name as keyof typeof clickableToModalMap]);
+
                 document.body.style.cursor = "default";
                 prevCursorStyle = "default";
 
@@ -212,7 +211,7 @@ export function usePortfolioScene({
                         deathAction.reset().fadeIn(0.2).play();
                     }
                     frameState.current.clickableNames = frameState.current.clickableNames.filter(n => n !== "Mesh_0010");
-                    if (currentIntersect) currentIntersect.visible = false;
+                    if (hit) hit.visible = false;
                 }
             }
         };
@@ -272,7 +271,6 @@ export function usePortfolioScene({
         window.addEventListener("touchstart", onTouchStart, { passive: true });
         window.addEventListener("touchmove", onTouchMove, { passive: false });
 
-        let prevHoverMessage = "";
         let prevCursorStyle = "";
 
         const basePos = new THREE.Vector3();
@@ -312,40 +310,29 @@ export function usePortfolioScene({
             }
 
             const now = performance.now();
+            let canInteract = scroll.target >= INTERACTION_THRESHOLD;
 
             if (now - lastRaycastTime >= RAYCAST_INTERVAL_MS && isDesktopDevice && !isModalOpenRef.current) {
                 lastRaycastTime = now;
-                if (model && scroll.target >= 0.999) {
+                if (model && canInteract) {
                     rayMouse.set(mouse.x, mouse.y);
                     raycaster.setFromCamera(rayMouse, camera);
                     const intersects = raycaster.intersectObject(model, true);
                     const hit = intersects[0]?.object ?? null;
 
-                    frameState.current.currentIntersect = hit;
-
                     const hitName = hit?.name || "";
                     const isClickable = frameState.current.clickableNames.includes(hitName);
                     const cursor = isClickable ? "pointer" : "default";
-                    const message = isClickable ? hoverMessageMap[hitName as keyof typeof hoverMessageMap] || "" : "";
 
-                    if (message !== prevHoverMessage) {
-                        prevHoverMessage = message;
-                        setHoverMessage(message);
-                    }
                     if (cursor !== prevCursorStyle) {
                         prevCursorStyle = cursor;
                         document.body.style.cursor = cursor;
                     }
                 } else {
-                    if (prevHoverMessage !== "") {
-                        prevHoverMessage = "";
-                        setHoverMessage("");
-                    }
                     if (prevCursorStyle !== "default") {
                         prevCursorStyle = "default";
                         document.body.style.cursor = "default";
                     }
-                    frameState.current.currentIntersect = null;
                 }
             }
 
@@ -393,5 +380,5 @@ export function usePortfolioScene({
 
             cancelAnimationFrame(rafId);
         };
-    }, [mountRef, setSelectedModal, setHoverMessage, setLoadingProgress, setIsLoading]);
+    }, [mountRef, setSelectedModal, setLoadingProgress, setIsLoading]);
 }

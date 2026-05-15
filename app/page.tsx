@@ -15,7 +15,6 @@ export default function Page() {
     const mountRef = useRef<HTMLDivElement | null>(null);
 
     const [selectedModal, setSelectedModal] = useState<modal | undefined>(undefined);
-    const [hoverMessage, setHoverMessage] = useState("");
     const [loadingProgress, setLoadingProgress] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
     const [loadError, setLoadError] = useState(false);
@@ -25,7 +24,6 @@ export default function Page() {
     usePortfolioScene({
         mountRef,
         setSelectedModal,
-        setHoverMessage,
         setLoadingProgress,
         setIsLoading,
         setLoadError,
@@ -74,11 +72,7 @@ export default function Page() {
             )}
 
             {renderModal()}
-
-            <div className={"z-5 absolute bottom-32 left-0 w-full transition-opacity duration-150 pointer-events-none text-lg flex justify-center items-center bg-black/50 py-2 opacity-0 " + (hoverMessage && !isModalOpen ? "opacity-100 " : " ") + (hoverMessage == "PLEASE DON'T THE CAT" ? "text-red-500" : "text-white ")}>
-                <span className="text-3xl h-8">{hoverMessage}</span>
-            </div>
-
+            
             <div className="fixed top-0 right-0 p-2 flex gap-2">
                 <McButton variant="primary" onClick={() => setSelectedModal(modal.contact)}>
                     <Mail />
@@ -86,6 +80,10 @@ export default function Page() {
                 <McButton onClick={() => setSelectedModal(modal.credits)}>
                     <CircleQuestionMark />
                 </McButton>
+            </div>
+
+            <div className="fixed bottom-0 w-full flex justify-center items-center text-[#000000c7] p-1">
+                scroll or use arrow keys to navigate through the portfolio.
             </div>
         </div>
     );
